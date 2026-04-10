@@ -1,0 +1,282 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_bus
+    ports:
+      - "15672:15672"
+    expose:
+      - "5672"
+    networks:
+      - twitter_net
+
+  nginx:
+    image: nginx
+    container_name: api_gateway
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ms-users-1
+      - ms-users-2
+      - ms-posts-1
+      - ms-posts-2
+      - ms-likes-1
+      - ms-likes-2
+      - ms-buscar-1
+      - ms-buscar-2
+    networks:
+      - twitter_net
+
+  mongo-users-primary:
+    image: mongo:latest
+    container_name: mongo-users-primary
+    command: [ "--replSet", "rs-users", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27017:27017"
+  mongo-users-sec1:
+    image: mongo:latest
+    container_name: mongo-users-sec1
+    command: [ "--replSet", "rs-users", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27018:27017"
+  mongo-users-sec2:
+    image: mongo:latest
+    container_name: mongo-users-sec2
+    command: [ "--replSet", "rs-users", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27019:27017"
+
+  mongo-posts-primary:
+    image: mongo:latest
+    container_name: mongo-posts-primary
+    command: [ "--replSet", "rs-posts", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27020:27017"
+  mongo-posts-sec1:
+    image: mongo:latest
+    container_name: mongo-posts-sec1
+    command: [ "--replSet", "rs-posts", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27021:27017"
+  mongo-posts-sec2:
+    image: mongo:latest
+    container_name: mongo-posts-sec2
+    command: [ "--replSet", "rs-posts", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27022:27017"
+
+  mongo-likes-primary:
+    image: mongo:latest
+    container_name: mongo-likes-primary
+    command: [ "--replSet", "rs-likes", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27023:27017"
+  mongo-likes-sec1:
+    image: mongo:latest
+    container_name: mongo-likes-sec1
+    command: [ "--replSet", "rs-likes", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27024:27017"
+  mongo-likes-sec2:
+    image: mongo:latest
+    container_name: mongo-likes-sec2
+    command: [ "--replSet", "rs-likes", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27025:27017"
+
+  mongo-buscar-primary:
+    image: mongo:latest
+    container_name: mongo-buscar-primary
+    command: [ "--replSet", "rs-buscar", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27026:27017"
+  mongo-buscar-sec1:
+    image: mongo:latest
+    container_name: mongo-buscar-sec1
+    command: [ "--replSet", "rs-buscar", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27027:27017"
+  mongo-buscar-sec2:
+    image: mongo:latest
+    container_name: mongo-buscar-sec2
+    command: [ "--replSet", "rs-buscar", "--bind_ip_all" ]
+    networks:
+      - twitter_net
+    ports:
+      - "27028:27017"
+
+  ms-users-1:
+    image: node:20
+    container_name: ms-users-1
+    working_dir: /app
+    volumes:
+      - ./ms-users:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-users-primary:27017,mongo-users-sec1:27017,mongo-users-sec2:27017/usersDB?replicaSet=rs-users
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-users-primary
+    networks:
+      - twitter_net
+
+  ms-users-2:
+    image: node:20
+    container_name: ms-users-2
+    working_dir: /app
+    volumes:
+      - ./ms-users:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-users-primary:27017,mongo-users-sec1:27017,mongo-users-sec2:27017/usersDB?replicaSet=rs-users
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-users-primary
+    networks:
+      - twitter_net
+
+  ms-posts-1:
+    image: node:20
+    container_name: ms-posts-1
+    working_dir: /app
+    volumes:
+      - ./ms-posts:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-posts-primary:27017,mongo-posts-sec1:27017,mongo-posts-sec2:27017/postsDB?replicaSet=rs-posts
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-posts-primary
+    networks:
+      - twitter_net
+
+  ms-posts-2:
+    image: node:20
+    container_name: ms-posts-2
+    working_dir: /app
+    volumes:
+      - ./ms-posts:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-posts-primary:27017,mongo-posts-sec1:27017,mongo-posts-sec2:27017/postsDB?replicaSet=rs-posts
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-posts-primary
+    networks:
+      - twitter_net
+
+  ms-likes-1:
+    image: node:20
+    container_name: ms-likes-1
+    working_dir: /app
+    volumes:
+      - ./ms-likes:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-likes-primary:27017,mongo-likes-sec1:27017,mongo-likes-sec2:27017/likesDB?replicaSet=rs-likes
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-likes-primary
+    networks:
+      - twitter_net
+
+  ms-likes-2:
+    image: node:20
+    container_name: ms-likes-2
+    working_dir: /app
+    volumes:
+      - ./ms-likes:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-likes-primary:27017,mongo-likes-sec1:27017,mongo-likes-sec2:27017/likesDB?replicaSet=rs-likes
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-likes-primary
+    networks:
+      - twitter_net
+
+  ms-buscar-1:
+    image: node:20
+    container_name: ms-buscar-1
+    working_dir: /app
+    volumes:
+      - ./ms-buscar:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-buscar-primary:27017,mongo-buscar-sec1:27017,mongo-buscar-sec2:27017/buscarDB?replicaSet=rs-buscar
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-buscar-primary
+    networks:
+      - twitter_net
+
+  ms-buscar-2:
+    image: node:20
+    container_name: ms-buscar-2
+    working_dir: /app
+    volumes:
+      - ./ms-buscar:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - MONGO_URI=mongodb://mongo-buscar-primary:27017,mongo-buscar-sec1:27017,mongo-buscar-sec2:27017/buscarDB?replicaSet=rs-buscar
+      - RABBITMQ_URL=amqp://rabbitmq
+    expose:
+      - "3000"
+    depends_on:
+      - mongo-buscar-primary
+    networks:
+      - twitter_net
+  frontend:
+    image: node:20
+    container_name: frontend_app
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    
+    command: sh -c "npm install && npm run dev -- --host"
+    expose:
+      - "5173"
+    networks:
+      - twitter_net
+
+networks:
+  twitter_net:
+    driver: bridge

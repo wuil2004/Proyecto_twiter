@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
-const { enviarMensaje } = require('./utils/rabbitmq');
+//const { enviarMensaje } = require('./utils/rabbitmq');
+const { enviarEventoGlobal } = require('./utils/rabbitmq');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,7 +30,8 @@ app.post('/', async (req, res) => {
       tipo: 'USUARIO_CREADO',
       datos: { id: nuevoUsuario._id, username: nuevoUsuario.username, email: nuevoUsuario.email }
     };
-    enviarMensaje('user_events', evento);
+    //enviarMensaje('user_events', evento);
+    enviarEventoGlobal('usuarios_exchange', evento);
 
     res.status(201).json({ usuario: nuevoUsuario });
   } catch (error) {

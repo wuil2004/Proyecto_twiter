@@ -1,38 +1,37 @@
 const amqp = require('amqplib');
-const User = require('../models/User'); // Importamos tu nuevo modelo
+const User = require('../models/User');
 
 async function iniciarAntena() {
     try {
         const conexion = await amqp.connect(process.env.RABBITMQ_URL);
         const canal = await conexion.createChannel();
-        const cola = 'user_events';
 
-        await canal.assertQueue(cola, { durable: true });
-        console.log(`📻 [RabbitMQ] ms-posts escuchando en la cola '${cola}'...`);
+        const exchange = 'usuarios_exchange';
+        await canal.assertExchange(exchange, 'fanout', { durable: true });
 
-        canal.consume(cola, async (mensaje) => {
+        const q = await canal.assertQueue('buzon_de_posts', { durable: true });
+        await canal.bindQueue(q.queue, exchange, '');
+
+        console.log(`📻 [RabbitMQ] ms-posts conectado al megáfono '${exchange}'...`);
+
+        canal.consume(q.queue, async (mensaje) => {
             if (mensaje !== null) {
                 const contenido = JSON.parse(mensaje.content.toString());
 
-                // Verificamos de qué trata el mensaje
                 if (contenido.tipo === 'USUARIO_CREADO') {
-                    console.log(`¡Mensaje atrapado! Guardando copia del usuario: ${contenido.datos.username}`);
-
+                    console.log(`¡Atrapado en Posts! Clonando a: ${contenido.datos.username}`);
                     try {
-                        // Guardamos físicamente la copia en postsDB
                         const nuevoUsuario = new User({
                             _id: contenido.datos.id,
                             username: contenido.datos.username,
                             email: contenido.datos.email
                         });
                         await nuevoUsuario.save();
-                        console.log(`✅ Usuario guardado exitosamente en postsDB`);
+                        console.log(`✅ ${contenido.datos.username} guardado en postsDB`);
                     } catch (err) {
-                        console.error("Error guardando el clon del usuario:", err.message);
+                        console.error("Error clonando:", err.message);
                     }
                 }
-
-                // 4. Le decimos a RabbitMQ: "Trabajo terminado, borra el mensaje"
                 canal.ack(mensaje);
             }
         });
@@ -40,6 +39,24 @@ async function iniciarAntena() {
     } catch (error) {
         console.error(`🔴 Error en la antena de RabbitMQ:`, error);
     }
+} // <--- AQUÍ TERMINA iniciarAntena (Esta era la llave que faltaba)
+
+// ==========================================
+// NUEVO: FUNCIÓN PARA GRITAR
+// ==========================================
+async function enviarEventoGlobal(exchange, mensaje) {
+    try {
+        const conexion = await amqp.connect(process.env.RABBITMQ_URL);
+        const canal = await conexion.createChannel();
+        await canal.assertExchange(exchange, 'fanout', { durable: true });
+        canal.publish(exchange, '', Buffer.from(JSON.stringify(mensaje)));
+
+        console.log(`📢 [RabbitMQ] ¡Aviso de nuevo tuit transmitido!`);
+        setTimeout(() => conexion.close(), 500);
+    } catch (error) { 
+        console.error(`🔴 Error en RabbitMQ:`, error); 
+    }
 }
 
-module.exports = { iniciarAntena };
+// SOLO UN EXPORT AL FINAL
+module.exports = { iniciarAntena, enviarEventoGlobal };

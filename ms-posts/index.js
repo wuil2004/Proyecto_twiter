@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { iniciarAntena } = require('./utils/rabbitmq');
+const { iniciarAntena, enviarEventoGlobal } = require('./utils/rabbitmq');
 const verificarToken = require('./middlewares/auth');
 const Post = require('./models/Post');
 
@@ -27,6 +27,12 @@ app.post('/', verificarToken, async (req, res) => {
 
         const nuevoPost = new Post({ texto: texto, autorId: req.usuario.id });
         await nuevoPost.save();
+
+        const evento = {
+            tipo: 'POST_CREADO',
+            datos: { id: nuevoPost._id }
+        };
+        enviarEventoGlobal('posts_exchange', evento);
 
         res.status(201).json({
             mensaje: "¡Tuit publicado con éxito!",

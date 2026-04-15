@@ -12,14 +12,11 @@ app.use(express.json());
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-        console.log('🟢 Conectado exitosamente a postsDB');
+        console.log(' Conectado exitosamente a postsDB');
         iniciarAntena();
     })
-    .catch(err => console.error('🔴 Error conectando a MongoDB:', err));
+    .catch(err => console.error(' Error conectando a MongoDB:', err));
 
-// ==========================================
-// RUTA 1: CREAR UN POST
-// ==========================================
 app.post('/', verificarToken, async (req, res) => {
     try {
         const { texto } = req.body;
@@ -30,7 +27,11 @@ app.post('/', verificarToken, async (req, res) => {
 
         const evento = {
             tipo: 'POST_CREADO',
-            datos: { id: nuevoPost._id }
+            datos: {
+                id: nuevoPost._id,
+                texto: nuevoPost.texto,   
+                autorId: nuevoPost.autorId
+            }
         };
         enviarEventoGlobal('posts_exchange', evento);
 

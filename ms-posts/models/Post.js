@@ -4,11 +4,11 @@ const postSchema = new mongoose.Schema({
     texto: {
         type: String,
         required: true,
-        maxLength: 280 // ¡Como el Twitter original!
+        maxLength: 280
     },
-    // Hacemos referencia al usuario que lo escribió
+    
     autorId: {
-        type: String, // Usamos String porque nuestro _id del usuario clonado es un String
+        type: String, 
         required: true,
         ref: 'User'
     },

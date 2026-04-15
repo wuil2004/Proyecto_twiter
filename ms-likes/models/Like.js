@@ -4,13 +4,13 @@ const likeSchema = new mongoose.Schema({
     postId: {
         type: String,
         required: true,
-        unique: true // Cada post tiene un solo registro de likes
+        unique: true
     },
     cantidad: {
         type: Number,
         default: 0
     },
-    usuariosQueDieronLike: [String] // Aquí guardaremos los IDs de los que dan "corazón"
+    usuariosQueDieronLike: [String]
 });
 
 module.exports = mongoose.model('Like', likeSchema);

@@ -8,9 +8,9 @@ const verificarToken = (req, res, next) => {
     if (!token) return res.status(401).json({ error: "Token malformado." });
 
     try {
-        // Usamos EXACTAMENTE la misma firma secreta que en ms-users
+        
         const verificado = jwt.verify(token, 'mi_firma_secreta_123');
-        req.usuario = verificado; // Guardamos los datos del usuario en la petición
+        req.usuario = verificado; 
         next();
     } catch (error) {
         res.status(401).json({ error: "Token inválido o expirado." });

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+//require('dotenv').config();
 
 const verificarToken = (req, res, next) => {
 
@@ -14,7 +15,8 @@ const verificarToken = (req, res, next) => {
   }
 
   try {
-    const gafeteVerificado = jwt.verify(token, 'mi_firma_secreta_123');
+    //const gafeteVerificado = jwt.verify(token, 'mi_firma_secreta_123');
+    const gafeteVerificado = jwt.verify(token, process.env.SECRET_KEY || 'mi_firma_secreta_123' );
     req.usuario = gafeteVerificado;
     next();
     

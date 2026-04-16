@@ -139,8 +139,11 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo-users-primary:27017,mongo-users-sec1:27017,mongo-users-sec2:27017/usersDB?replicaSet=rs-users
       - RABBITMQ_URL=amqp://rabbitmq
+
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-users-primary
     networks:
@@ -158,6 +161,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-users-primary
     networks:
@@ -175,6 +180,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-posts-primary
     networks:
@@ -192,6 +199,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-posts-primary
     networks:
@@ -209,6 +218,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-likes-primary
     networks:
@@ -226,6 +237,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-likes-primary
     networks:
@@ -243,6 +256,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-buscar-primary
     networks:
@@ -260,6 +275,8 @@ services:
       - RABBITMQ_URL=amqp://rabbitmq
     expose:
       - "3000"
+    env_file:
+      - .env
     depends_on:
       - mongo-buscar-primary
     networks:
@@ -270,7 +287,7 @@ services:
     working_dir: /app
     volumes:
       - ./frontend:/app
-    
+
     command: sh -c "npm install && npm run dev -- --host"
     expose:
       - "5173"

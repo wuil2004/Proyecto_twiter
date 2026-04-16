@@ -53,8 +53,8 @@ app.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: usuario._id, username: usuario.username }, 
-      'mi_firma_secreta_123',
+      { id: usuario._id, username: usuario.username },
+      process.env.SECRET_KEY,
       { expiresIn: '2h' }
     );
 
@@ -68,9 +68,9 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/perfil', verificarToken, (req, res) => {
-  
+
   res.json({
-    tuInformacion: req.usuario 
+    tuInformacion: req.usuario
   });
 });
 

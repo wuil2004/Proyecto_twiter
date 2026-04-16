@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const verificarToken = (req, res, next) => {
     const authHeader = req.header('Authorization');
@@ -8,7 +9,7 @@ const verificarToken = (req, res, next) => {
     if (!token) return res.status(401).json({ error: "Token malformado." });
 
     try {
-        const verificado = jwt.verify(token, 'mi_firma_secreta_123');
+        const verificado = jwt.verify(token, process.env.SECRET_KEY || 'mi_firma_secreta_123');
         req.usuario = verificado;
         next();
     } catch (error) {

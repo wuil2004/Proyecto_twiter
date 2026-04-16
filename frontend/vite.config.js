@@ -1,10 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['app_frontend'] // ¡Esto le dice a Vite que confíe en Nginx!
+    host: true, // Permite que Docker exponga la red
+    hmr: {
+      clientPort: 8080, // Le dice a Vite que el navegador usará el puerto de Nginx
+    }
   }
 })

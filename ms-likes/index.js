@@ -1,11 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { iniciarAntena } = require('./utils/rabbitmq');
+const { iniciarAntena, enviarEventoGlobal } = require('./utils/rabbitmq');
 const verificarToken = require('./middlewares/auth'); 
 const Like = require('./models/Like'); 
 
 const app = express();
 const port = process.env.PORT || 3000;
+
 
 app.use(express.json());
 
@@ -15,11 +16,11 @@ mongoose.connect(process.env.MONGO_URI)
         iniciarAntena();
     })
     .catch(err => console.error(' Error conectando a MongoDB:', err));
-
+/*
 app.get('/', (req, res) => {
     res.json({ mensaje: "¡El microservicio de Likes está vivo y actualizado!" });
 });
-
+*/
 
 app.post('/:postId/toggle', verificarToken, async (req, res) => {
     try {
@@ -47,6 +48,16 @@ app.post('/:postId/toggle', verificarToken, async (req, res) => {
         }
 
         await registro.save();
+
+        // 👇 ¡NUEVO! Le avisamos al mundo que este post actualizó sus likes
+        const eventoLike = {
+            tipo: 'LIKE_ACTUALIZADO',
+            datos: {
+                postId: postId,
+                totalLikes: registro.cantidad
+            }
+        };
+        enviarEventoGlobal('likes_exchange', eventoLike);
 
         res.json({
             mensaje: "Like actualizado con éxito",

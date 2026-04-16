@@ -6,11 +6,15 @@ const postSchema = new mongoose.Schema({
         required: true,
         maxLength: 280
     },
-    
+
     autorId: {
-        type: String, 
+        type: String,
         required: true,
         ref: 'User'
+    },
+    likes: {
+        type: Number,
+        default: 0
     },
     fechaCreacion: {
         type: Date,

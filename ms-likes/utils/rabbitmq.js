@@ -56,4 +56,16 @@ async function iniciarAntena() {
     }
 }
 
-module.exports = { iniciarAntena };
+async function enviarEventoGlobal(exchange, mensaje) {
+    try {
+        const conexion = await amqp.connect(process.env.RABBITMQ_URL);
+        const canal = await conexion.createChannel();
+        await canal.assertExchange(exchange, 'fanout', { durable: true });
+        canal.publish(exchange, '', Buffer.from(JSON.stringify(mensaje)));
+        setTimeout(() => { conexion.close(); }, 500);
+    } catch (error) {
+        console.error('Error al enviar evento:', error);
+    }
+}
+
+module.exports = { iniciarAntena, enviarEventoGlobal };

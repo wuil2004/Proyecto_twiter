@@ -56,5 +56,5 @@ Sigue estos pasos en orden para levantar el ecosistema completo:
 
 ### 1. Clonar el repositorio
 ```bash
-git clone [https://github.com/TU_USUARIO/micro-twitter.git](https://github.com/TU_USUARIO/micro-twitter.git)
+git clone https://github.com/wuil2004/Proyecto_twiter.git
 cd micro-twitter

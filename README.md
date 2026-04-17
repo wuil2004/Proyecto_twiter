@@ -56,5 +56,5 @@ Sigue estos pasos para levantar toda la infraestructura en tu máquina:
 
 **1. Clonar el repositorio**
 ```bash
-git clone [https://github.com/wuil2004/Proyecto_twiter.git)
+git clone [https://github.com/wuil2004/Proyecto_twiter.git]
 cd micro-twitter

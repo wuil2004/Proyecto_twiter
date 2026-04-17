@@ -46,7 +46,6 @@ function Muro() {
             );
             setNuevoTuit('');
 
-            // Si estaba buscando algo y publica, mejor limpiamos la búsqueda y lo regresamos al muro normal
             if (busquedaActiva) {
                 limpiarBusqueda();
             } else {
@@ -76,7 +75,7 @@ function Muro() {
         }
     };
 
-    // 👇 NUEVA FUNCIÓN PARA EJECUTAR LA BÚSQUEDA 👇
+
     const buscarTuits = async (e) => {
         e.preventDefault();
         if (!busqueda.trim()) {
@@ -86,12 +85,11 @@ function Muro() {
 
         const token = localStorage.getItem('token');
         try {
-            // Usamos tu API Gateway asumiendo que mapea /api/buscar hacia ms-buscar
+        
             const respuesta = await axios.get(`http://localhost:8080/api/buscar/?q=${busqueda}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // Reemplazamos los tuits normales por los resultados
             setTuits(respuesta.data.resultados);
             setBusquedaActiva(true);
             setError('');
@@ -100,7 +98,6 @@ function Muro() {
         }
     };
 
-    // 👇 NUEVA FUNCIÓN PARA VOLVER AL TIMELINE NORMAL 👇
     const limpiarBusqueda = () => {
         setBusqueda('');
         setBusquedaActiva(false);
@@ -132,7 +129,7 @@ function Muro() {
     return (
         <div style={{ maxWidth: '600px', margin: '0 auto', marginTop: '30px' }}>
 
-            {/* Barra superior */}
+        
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                 <h2 style={{ margin: 0, color: '#1da1f2' }}>{busquedaActiva ? 'Resultados de Búsqueda' : 'Inicio'}</h2>
                 <button onClick={cerrarSesion} style={{ background: '#e0245e', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
@@ -142,7 +139,7 @@ function Muro() {
 
             {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
-            {/* 👇 NUEVA BARRA DE BÚSQUEDA 👇 */}
+        
             <div style={{ marginBottom: '20px' }}>
                 <form onSubmit={buscarTuits} style={{ display: 'flex', gap: '10px' }}>
                     <input
@@ -164,7 +161,7 @@ function Muro() {
                 </form>
             </div>
 
-            {/* Cajita para tuitear (solo la mostramos si NO estamos buscando) */}
+        
             {!busquedaActiva && (
                 <div style={{ background: 'white', padding: '15px', borderRadius: '10px', marginBottom: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                     <form onSubmit={publicarTuit}>

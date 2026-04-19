@@ -22,6 +22,7 @@ function Login() {
             await axios.post('http://localhost:8080/api/users/', { username, email, password });
             const respuesta = await axios.post('http://localhost:8080/api/users/login', { email, password });
             localStorage.setItem('token', respuesta.data.token);
+            localStorage.setItem('username', respuesta.data.usuario.username);
             toast.success('¡Registro y conexión exitosos!', { id: toastId });
             setTimeout(() => navigate('/'), 1000);
         } catch (err) {
@@ -35,6 +36,7 @@ function Login() {
         try {
             const respuesta = await axios.post('http://localhost:8080/api/users/login', { email, password });
             localStorage.setItem('token', respuesta.data.token);
+            localStorage.setItem('username', respuesta.data.usuario.username);
             toast.success('¡Conexión establecida!', { id: toastId });
             setTimeout(() => navigate('/'), 1000);
         } catch (err) {

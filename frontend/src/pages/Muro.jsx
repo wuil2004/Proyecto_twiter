@@ -1,33 +1,33 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './Muro.css'; 
 
 function Muro() {
     const [tuits, setTuits] = useState([]);
     const [nuevoTuit, setNuevoTuit] = useState('');
-
-    // 👇 NUEVOS ESTADOS PARA EL BUSCADOR 👇
     const [busqueda, setBusqueda] = useState('');
     const [busquedaActiva, setBusquedaActiva] = useState(false);
-
     const [error, setError] = useState('');
+    
+    // 👇 NUEVO ESTADO PARA EL USUARIO 👇
+    const [usuarioActual, setUsuarioActual] = useState('Usuario');
+    
     const navigate = useNavigate();
 
-    useEffect(() => {
-        cargarMuro();
+    useEffect(() => { 
+        cargarMuro(); 
+        
+        // Al cargar la página, leemos el nombre de usuario del LocalStorage
+        const usernameGuardado = localStorage.getItem('username') || 'Invitado';
+        setUsuarioActual(usernameGuardado);
     }, []);
 
     const cargarMuro = async () => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/login');
-            return;
-        }
-
+        if (!token) { navigate('/login'); return; }
         try {
-            const respuesta = await axios.get('http://localhost:8080/api/posts/', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const respuesta = await axios.get('http://localhost:8080/api/posts/', { headers: { Authorization: `Bearer ${token}` } });
             setTuits(respuesta.data.muro);
         } catch (err) {
             setError('Error al cargar el muro.');
@@ -40,17 +40,9 @@ function Muro() {
         if (!nuevoTuit.trim()) return;
         const token = localStorage.getItem('token');
         try {
-            await axios.post('http://localhost:8080/api/posts/',
-                { texto: nuevoTuit },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await axios.post('http://localhost:8080/api/posts/', { texto: nuevoTuit }, { headers: { Authorization: `Bearer ${token}` } });
             setNuevoTuit('');
-
-            if (busquedaActiva) {
-                limpiarBusqueda();
-            } else {
-                cargarMuro();
-            }
+            busquedaActiva ? limpiarBusqueda() : cargarMuro();
         } catch (err) {
             alert("Hubo un error al publicar el tuit.");
         }
@@ -59,37 +51,21 @@ function Muro() {
     const darLike = async (postId) => {
         const token = localStorage.getItem('token');
         try {
-            const respuesta = await axios.post(`http://localhost:8080/api/likes/${postId}/toggle`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const respuesta = await axios.post(`http://localhost:8080/api/likes/${postId}/toggle`, {}, { headers: { Authorization: `Bearer ${token}` } });
             setTuits((tuitsAnteriores) =>
-                tuitsAnteriores.map((tuit) =>
-                    tuit._id === postId
-                        ? { ...tuit, likes: respuesta.data.totalLikes }
-                        : tuit
-                )
+                tuitsAnteriores.map((tuit) => tuit._id === postId ? { ...tuit, likes: respuesta.data.totalLikes } : tuit )
             );
         } catch (err) {
             console.error("Error al dar like", err);
         }
     };
 
-
     const buscarTuits = async (e) => {
         e.preventDefault();
-        if (!busqueda.trim()) {
-            limpiarBusqueda();
-            return;
-        }
-
+        if (!busqueda.trim()) { limpiarBusqueda(); return; }
         const token = localStorage.getItem('token');
         try {
-        
-            const respuesta = await axios.get(`http://localhost:8080/api/buscar/?q=${busqueda}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
+            const respuesta = await axios.get(`http://localhost:8080/api/buscar/?q=${busqueda}`, { headers: { Authorization: `Bearer ${token}` } });
             setTuits(respuesta.data.resultados);
             setBusquedaActiva(true);
             setError('');
@@ -107,12 +83,12 @@ function Muro() {
 
     const cerrarSesion = () => {
         localStorage.removeItem('token');
-        localStorage.removeItem('username');
+        localStorage.removeItem('username'); // Limpiamos también el usuario
         navigate('/login');
     };
 
-    // Función para calcular el tiempo relativo
     const obtenerTiempoRelativo = (fecha) => {
+        // ... (Tu función de tiempo intacta)
         const ahora = new Date();
         const tiempoTuit = new Date(fecha);
         const diferenciaSegundos = Math.floor((ahora - tiempoTuit) / 1000);
@@ -127,105 +103,121 @@ function Muro() {
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', marginTop: '30px' }}>
+        <div className="muro-wrapper">
+            <div className="muro-dashboard">
 
-        
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                <h2 style={{ margin: 0, color: '#1da1f2' }}>{busquedaActiva ? 'Resultados de Búsqueda' : 'Inicio'}</h2>
-                <button onClick={cerrarSesion} style={{ background: '#e0245e', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
-                    Salir
-                </button>
-            </div>
-
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-
-        
-            <div style={{ marginBottom: '20px' }}>
-                <form onSubmit={buscarTuits} style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                        type="text"
-                        placeholder="Buscar tuits o @usuarios..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                        style={{ flex: 1, padding: '12px 20px', borderRadius: '25px', border: '1px solid #ccd6dd', outline: 'none', fontSize: '15px' }}
-                    />
-                    <button type="submit" style={{ background: '#1da1f2', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        🔍 Buscar
-                    </button>
-
-                    {busquedaActiva && (
-                        <button type="button" onClick={limpiarBusqueda} style={{ background: '#657786', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '25px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            ✖ Limpiar
+                {/* COLUMNA IZQUIERDA */}
+                <aside className="muro-sidebar">
+                    
+                    {/* 👇 TARJETA DE PERFIL ACTUALIZADA 👇 */}
+                    <div className="glass-panel">
+                        <div className="profile-header">
+                            <img 
+                                src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${usuarioActual}`} 
+                                alt="Avatar" 
+                                className="avatar-large" 
+                            />
+                            <div className="profile-info">
+                                <h2>¡Hola, @{usuarioActual}!</h2>
+                                <p>Estado: En línea 🟢</p>
+                            </div>
+                        </div>
+                        <button onClick={cerrarSesion} className="btn-neon btn-neon-red">
+                            Desconectar Nodo
                         </button>
+                    </div>
+
+                    <div className="glass-panel">
+                        <h2 className="panel-title">Rastreador</h2>
+                        <form onSubmit={buscarTuits}>
+                            <input
+                                type="text"
+                                placeholder="Buscar @nodos o datos..."
+                                value={busqueda}
+                                onChange={(e) => setBusqueda(e.target.value)}
+                                className="muro-input"
+                            />
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button type="submit" className="btn-neon">Buscar</button>
+                                {busquedaActiva && (
+                                    <button type="button" onClick={limpiarBusqueda} className="btn-neon btn-neon-gray">X</button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                </aside>
+
+                {/* COLUMNA DERECHA */}
+                <main className="muro-feed">
+                    {error && <p style={{ color: '#ff2a5f', textAlign: 'center', background: 'rgba(255,42,95,0.1)', padding: '10px', borderRadius: '8px' }}>{error}</p>}
+
+                    <h2 className="panel-title" style={{ paddingLeft: '10px' }}>
+                        {busquedaActiva ? 'Resultados de Búsqueda' : 'Transmisiones Globales'}
+                    </h2>
+
+                    {/* 👇 CAJA DE PUBLICAR CON AVATAR 👇 */}
+                    {!busquedaActiva && (
+                        <div className="glass-panel" style={{ marginBottom: '30px' }}>
+                            <div className="publish-area">
+                                <img 
+                                    src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${usuarioActual}`} 
+                                    alt="Avatar" 
+                                    className="avatar-small" 
+                                />
+                                <div className="publish-form-wrapper">
+                                    <form onSubmit={publicarTuit}>
+                                        <textarea
+                                            value={nuevoTuit}
+                                            onChange={(e) => setNuevoTuit(e.target.value)}
+                                            placeholder="¿Qué datos vas a transmitir hoy?"
+                                            maxLength={280}
+                                            className="muro-input"
+                                        />
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                                            <span style={{ color: nuevoTuit.length === 280 ? '#ff2a5f' : '#8892b0', fontSize: '13px', fontWeight: 'bold' }}>
+                                                {nuevoTuit.length} / 280
+                                            </span>
+                                            <button type="submit" disabled={!nuevoTuit.trim()} className="btn-neon btn-neon-auto">
+                                                Transmitir
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     )}
-                </form>
-            </div>
 
-        
-            {!busquedaActiva && (
-                <div style={{ background: 'white', padding: '15px', borderRadius: '10px', marginBottom: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                    <form onSubmit={publicarTuit}>
-                        <textarea
-                            value={nuevoTuit}
-                            onChange={(e) => setNuevoTuit(e.target.value)}
-                            placeholder="¿Qué está pasando?"
-                            maxLength={280}
-                            style={{ width: '100%', minHeight: '80px', padding: '10px', borderRadius: '10px', border: '1px solid #ccd6dd', resize: 'none', fontSize: '16px', fontFamily: 'inherit' }}
-                        />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                            <span style={{ color: nuevoTuit.length === 280 ? 'red' : '#657786', fontSize: '14px' }}>
-                                {nuevoTuit.length} / 280
-                            </span>
-                            <button type="submit" disabled={!nuevoTuit.trim()} style={{ background: nuevoTuit.trim() ? '#1da1f2' : '#8ed0f9', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', cursor: nuevoTuit.trim() ? 'pointer' : 'default' }}>
-                                Tuitear
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* Lista de tuits */}
-            <div>
-                {tuits.length === 0 ? (
-                    <p style={{ textAlign: 'center', color: '#657786', marginTop: '40px' }}>
-                        {busquedaActiva ? 'No se encontraron resultados para tu búsqueda. 🕵️‍♂️' : 'No hay tuits todavía. ¡Sé el primero en publicar!'}
-                    </p>
-                ) : (
-                    tuits.map((tuit) => (
-                        <div key={tuit._id} style={{ background: 'white', padding: '15px', borderRadius: '10px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                                @{tuit.autorId?.username || 'Usuario Desconocido'}
-                                <span style={{ fontWeight: 'normal', color: '#657786', fontSize: '12px', marginLeft: '10px' }}>
-                                    {obtenerTiempoRelativo(tuit.fechaCreacion)}
-                                </span>
+                    {/* Lista de tuits */}
+                    <div className="tuits-list">
+                        {tuits.length === 0 ? (
+                            <div className="glass-panel" style={{ textAlign: 'center', color: '#8892b0', padding: '40px' }}>
+                                {busquedaActiva ? 'Búsqueda sin resultados. 🕵️‍♂️' : 'No hay transmisiones. Inicia la primera conexión.'}
                             </div>
-                            <p style={{ margin: 0, fontSize: '16px', wordWrap: 'break-word' }}>{tuit.texto}</p>
+                        ) : (
+                            tuits.map((tuit) => (
+                                <div key={tuit._id} className="glass-panel tuit-card">
+                                    <div className="tuit-header">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {/* Avatar del autor del tuit */}
+                                            <img 
+                                                src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${tuit.autorId?.username || 'default'}`} 
+                                                alt="Avatar" 
+                                                style={{ width: '30px', height: '30px', borderRadius: '50%' }} 
+                                            />
+                                            <span>@{tuit.autorId?.username || 'Nodo_Desconocido'}</span>
+                                        </div>
+                                        <span className="tuit-time">{obtenerTiempoRelativo(tuit.fechaCreacion)}</span>
+                                    </div>
+                                    <p className="tuit-text">{tuit.texto}</p>
+                                    <button onClick={() => darLike(tuit._id)} className="btn-like">
+                                        ❤️ {tuit.likes}
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </main>
 
-                            <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center' }}>
-                                <button
-                                    onClick={() => darLike(tuit._id)}
-                                    style={{
-                                        background: 'transparent',
-                                        border: '1px solid #e0245e',
-                                        color: '#e0245e',
-                                        padding: '5px 15px',
-                                        borderRadius: '20px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '5px',
-                                        transition: '0.2s'
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.background = '#ffebee'}
-                                    onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                                >
-                                    ❤️ {tuit.likes}
-                                </button>
-                            </div>
-                        </div>
-                    ))
-                )}
             </div>
         </div>
     );

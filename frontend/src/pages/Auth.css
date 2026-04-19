@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
 
+/* Reset básico para ocupar toda la pantalla */
 body, html {
     margin: 0;
     padding: 0;
-    overflow: hidden; 
+    /* overflow: hidden;  Evita el scroll (Comentado para que funcione el Muro) */
 }
 
 /* El contenedor principal que abarca el 100% de la pantalla */
@@ -13,6 +14,7 @@ body, html {
     height: 100vh;
     background: #050505;
     font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
 }
 
 /* Estructura base de cada mitad */
@@ -29,16 +31,19 @@ body, html {
 /* Fondos y colores de cada lado */
 .panel-login {
     background: linear-gradient(135deg, #0a192f 0%, #020c1b 100%);
-    box-shadow: inset -10px 0 30px rgba(0, 0, 0, 0.5);
+    /* Esto "borra" el borde derecho con un degradado transparente */
+    -webkit-mask-image: linear-gradient(to right, black 60%, transparent 100%);
+    mask-image: linear-gradient(to right, black 60%, transparent 100%);
 }
 
 .panel-register {
     background: linear-gradient(135deg, #1d0a2f 0%, #050505 100%);
-    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.5);
+    /* Esto "borra" el borde izquierdo con un degradado transparente (CORREGIDO) */
+    -webkit-mask-image: linear-gradient(to left, black 60%, transparent 100%);
+    mask-image: linear-gradient(to left, black 60%, transparent 100%);
 }
 
-/* LÓGICA DE ESTADOS*/
-
+/* ============= LÓGICA DE ESTADOS ============= */
 
 /* ESTADO 1: PANTALLA DIVIDIDA (50/50) */
 .view-split .panel {
@@ -53,6 +58,7 @@ body, html {
 .view-split .panel-login:hover { background: linear-gradient(135deg, #0e2445 0%, #020c1b 100%); }
 .view-split .panel-register:hover { background: linear-gradient(135deg, #2a0f44 0%, #050505 100%); }
 
+/* ESTADO 2 y 3: MODO ACTIVO (100/0) */
 .view-login .panel-login { flex: 1; cursor: default; }
 .view-login .panel-register { flex: 0; opacity: 0; pointer-events: none; }
 
@@ -60,6 +66,9 @@ body, html {
 .view-register .panel-login { flex: 0; opacity: 0; pointer-events: none; }
 
 
+/* ============= CONTENIDO INTERNO ============= */
+
+/* El texto gigante que se ve al principio */
 .hero-content {
     position: absolute;
     text-align: center;
@@ -122,8 +131,7 @@ body, html {
 }
 
 
-/* ============= INPUTS Y BOTONES NEÓN ============= 
-*/
+/* ============= INPUTS Y BOTONES NEÓN ============= */
 .input-group { position: relative; margin-bottom: 25px; width: 100%; }
 
 .input-group input {
@@ -199,11 +207,10 @@ body, html {
     box-shadow: 0 0 20px #0ef;
 }
 
-/* Botón de Atrás (La X) */
+/* ============= BOTÓN DE ATRÁS (VOLVER) ============= */
 .btn-back {
     position: absolute;
-    top: -50px;
-    left: 0;
+    top: -50px; /* Oculto arriba por defecto */
     background: transparent;
     border: none;
     color: #8892b0;
@@ -218,10 +225,25 @@ body, html {
 }
 .btn-back:hover { color: white; }
 
-/* Hacer visible el botón de volver cuando el panel está activo */
-.view-login .panel-login .btn-back,
+/* Posicionar a la izquierda por defecto (para Login) */
+.panel-login .btn-back {
+    left: 30px;
+}
+
+/* Posicionar a la derecha por defecto (para Registro) */
+.panel-register .btn-back {
+    right: 30px;
+    left: auto;
+}
+
+/* Hacer visible el botón de volver en LOGIN */
+.view-login .panel-login .btn-back {
+    top: 30px;
+    pointer-events: all;
+}
+
+/* Hacer visible el botón de volver en REGISTRO */
 .view-register .panel-register .btn-back {
     top: 30px;
-    left: 30px;
     pointer-events: all;
 }

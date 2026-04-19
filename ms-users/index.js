@@ -58,15 +58,20 @@ app.post('/login', async (req, res) => {
       { expiresIn: '2h' }
     );
 
+    // 👇 AQUÍ ESTÁ LA MAGIA 👇
     res.json({
-      token: token
+      token: token,
+      usuario: {
+        id: usuario._id,
+        username: usuario.username,
+        email: usuario.email
+      }
     });
 
   } catch (error) {
     res.status(500).json({ error: "Error en el servidor al intentar iniciar sesión" });
   }
 });
-
 app.get('/perfil', verificarToken, (req, res) => {
 
   res.json({

@@ -40,7 +40,12 @@ async function iniciarAntena() {
                 if (contenido.tipo === 'POST_CREADO') {
                     console.log(`🔎 [Buscar] Indexando nuevo tuit para el buscador...`);
                     try {
-                        await new Post({ _id: contenido.datos.id, texto: contenido.datos.texto, autorId: contenido.datos.autorId }).save();
+                        await new Post({ 
+                            _id: contenido.datos.id, 
+                            texto: contenido.datos.texto, 
+                            autorId: contenido.datos.autorId,
+                            imagenUrl: contenido.datos.imagenUrl
+                        }).save();
                         console.log(`✅ Tuit guardado en buscarDB`);
                     } catch (err) { console.error(err.message); }
                 }

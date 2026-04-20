@@ -26,6 +26,8 @@ services:
       - ms-likes-2
       - ms-buscar-1
       - ms-buscar-2
+      - ms-media-1
+      - ms-media-2
     networks:
       - twitter_net
 
@@ -281,6 +283,35 @@ services:
       - mongo-buscar-primary
     networks:
       - twitter_net
+
+  ms-media-1:
+    image: node:20
+    container_name: ms-media-1
+    working_dir: /app
+    volumes:
+      - ./ms-media:/app  # <--- Este es el puente desde la raíz a la carpeta del micro
+    command: sh -c "npm install && npm start"
+    expose:
+      - "3000" 
+    env_file:
+      - .env
+    networks:
+      - twitter_net
+
+  ms-media-2:
+    image: node:20
+    container_name: ms-media-2
+    working_dir: /app
+    volumes:
+      - ./ms-media:/app
+    command: sh -c "npm install && npm start"
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    networks:
+      - twitter_net
+
   frontend:
     image: node:20
     container_name: frontend_app

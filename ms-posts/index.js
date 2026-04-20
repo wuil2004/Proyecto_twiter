@@ -19,18 +19,27 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.post('/', verificarToken, async (req, res) => {
     try {
-        const { texto } = req.body;
+        // 1. Ahora también extraemos la imagenUrl del body
+        const { texto, imagenUrl } = req.body; 
+        
         if (!texto) return res.status(400).json({ error: "El tuit no puede estar vacío" });
 
-        const nuevoPost = new Post({ texto: texto, autorId: req.usuario.id });
+        // 2. Agregamos la imagenUrl al crear el nuevo post
+        const nuevoPost = new Post({ 
+            texto: texto, 
+            autorId: req.usuario.id,
+            imagenUrl: imagenUrl || null // Si no hay imagen, guarda null
+        });
         await nuevoPost.save();
 
+        // 3. Incluimos la imagenUrl en el grito de RabbitMQ
         const evento = {
             tipo: 'POST_CREADO',
             datos: {
                 id: nuevoPost._id,
                 texto: nuevoPost.texto,   
-                autorId: nuevoPost.autorId
+                autorId: nuevoPost.autorId,
+                imagenUrl: nuevoPost.imagenUrl // <--- Novedad
             }
         };
         enviarEventoGlobal('posts_exchange', evento);
